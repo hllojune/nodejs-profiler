@@ -30,8 +30,16 @@
 
     <h3>[출력] 분석 결과 그래프</h3>
     <div id="controls">
-        <button id="viewByTaskBtn">Task별 분석</button>
-        <button id="viewByCoreBtn">Core별 분석</button>
+        <button id="viewByTaskBtn">통계 분석 (Task 기준)</button>
+        <button id="viewByCoreBtn">통계 분석 (Core 기준)</button>
+        <select id="taskSelectorForPie">
+            <option value="task1">Task 1</option>
+            <option value="task2">Task 2</option>
+            <option value="task3">Task 3</option>
+            <option value="task4">Task 4</option>
+            <option value="task5">Task 5</option>
+        </select>
+        <button id="viewPieChartBtn">점유율 분석 (파이 차트)</button>
     </div>
     <div id="chartContainer">
         <canvas id="myChart"></canvas>

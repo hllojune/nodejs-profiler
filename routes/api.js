@@ -91,4 +91,33 @@ const getStats = async (groupField, res) => {
 router.get('/stats/tasks', (req, res) => getStats('task', res));
 router.get('/stats/cores', (req, res) => getStats('core', res));
 
+/**
+ * [API 3] 특정 Task에 대한 Core별 데이터 조회 (파이 차트용)
+ * GET /api/data-by-task?task=task1
+ */
+router.get('/data-by-task', async (req, res) => {
+    try {
+        const { task } = req.query; // URL에서 task 이름을 가져옵니다 (예: task1)
+        if (!task) {
+            return res.status(400).send('Task query parameter is required.');
+        }
+        // 모든 데이터 블록에서 해당 task의 core별 value를 모두 가져옵니다.
+        const taskData = await PerfData.find(
+            { task: task }, // 조건: task 이름이 일치하는 데이터
+            { core: 1, value: 1, _id: 0 } // 필드: core와 value만 가져오기
+        ).sort({ core: 1 });
+
+        // 가져온 데이터를 합산합니다 (동일 core의 값을 모두 더함).
+        const aggregated = taskData.reduce((acc, { core, value }) => {
+            acc[core] = (acc[core] || 0) + value;
+            return acc;
+        }, {});
+
+        res.json(aggregated);
+    } catch (error) {
+        console.error('Data by task Error:', error);
+        res.status(500).send('Error fetching data by task.');
+    }
+});
+
 module.exports = router;

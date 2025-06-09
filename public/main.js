@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewByCoreBtn = document.getElementById('viewByCoreBtn');
     const ctx = document.getElementById('myChart').getContext('2d');
     let chart; // 차트 객체를 저장할 변수
+    const taskSelectorForPie = document.getElementById('taskSelectorForPie');
+const viewPieChartBtn = document.getElementById('viewPieChartBtn');
 
     // '업로드 및 분석' 버튼을 눌렀을 때의 동작을 정의합니다.
     uploadForm.addEventListener('submit', async (e) => {
@@ -31,6 +33,58 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(error);
         }
     });
+
+    // 파이 차트 버튼 클릭 이벤트
+viewPieChartBtn.addEventListener('click', () => {
+    const selectedTask = taskSelectorForPie.value;
+    fetchAndDrawPieChart(selectedTask);
+});
+
+// 파이 차트를 그리는 새 함수
+const fetchAndDrawPieChart = async (task) => {
+    try {
+        statusP.textContent = '파이 차트 로딩 중...';
+        // 새로 만든 API를 호출합니다.
+        const response = await fetch(`/api/data-by-task?task=${task}`);
+        if (!response.ok) throw new Error('Data fetch error for pie chart');
+        const data = await response.json(); // 예: { core1: 5000, core2: 5200, ... }
+
+        if (chart) chart.destroy(); // 기존 차트 파괴
+
+        // Chart.js로 파이 차트 생성
+        chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(data), //['core1', 'core2', ...]
+                datasets: [{
+                    label: `${task} 점유율`,
+                    data: Object.values(data), //[5000, 5200, ...]
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `'${task}'에 대한 Core별 성능 점유율`,
+                        font: { size: 18 }
+                    }
+                }
+            }
+        });
+        statusP.textContent = '';
+    } catch (error) {
+        statusP.textContent = '❌ 파이 차트 로딩 오류.';
+        console.error(error);
+    }
+};
 
     // 서버에서 통계 데이터를 가져와 차트를 그리는 함수
     const fetchDataAndDrawChart = async (type) => {
